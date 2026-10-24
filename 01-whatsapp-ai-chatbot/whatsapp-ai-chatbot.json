@@ -1,0 +1,262 @@
+{
+  "name": "WhatsApp AI Chatbot (Bot Playbook template)",
+  "nodes": [
+    {
+      "id": "6c1d1f8e-0001-4c5a-9a01-5b0b0c0d0001",
+      "name": "WhatsApp Trigger",
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "6c1d1f8e-0101-4c5a-9a01-5b0b0c0d0101",
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      }
+    },
+    {
+      "id": "6c1d1f8e-0002-4c5a-9a01-5b0b0c0d0002",
+      "name": "Only text messages",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.4,
+      "position": [
+        240,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "a4b7c2d1-0001-4e1f-8a2b-000000000001",
+              "leftValue": "={{ $json.messages?.[0]?.text?.body }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "6c1d1f8e-0003-4c5a-9a01-5b0b0c0d0003",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        520,
+        0
+      ],
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.messages[0].text.body }}",
+        "options": {
+          "systemMessage": "You are the WhatsApp assistant for Bella's Hair Studio. Answer only using the information below. Keep answers short and friendly. If you don't know the answer, say: \"Good question! I'll ask the team and they'll reply soon.\" Never make up prices or times.\nHours: Monday to Friday 9 AM to 7 PM, Saturday 9 AM to 5 PM, Sunday closed. Address: 142 Maple Street, Springfield. Prices: women's haircut $45, men's haircut $30, kids' haircut $20, colouring $80 to $150, blowout $35. Booking: call (555) 012-3456 or book at bellashairstudio.example.com/book."
+        }
+      }
+    },
+    {
+      "id": "6c1d1f8e-0004-4c5a-9a01-5b0b0c0d0004",
+      "name": "Google Gemini Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        440,
+        240
+      ],
+      "parameters": {
+        "modelName": "models/gemini-3.5-flash",
+        "options": {}
+      }
+    },
+    {
+      "id": "6c1d1f8e-0005-4c5a-9a01-5b0b0c0d0005",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        620,
+        240
+      ],
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('WhatsApp Trigger').item.json.contacts[0].wa_id }}",
+        "contextWindowLength": 10
+      }
+    },
+    {
+      "id": "6c1d1f8e-0006-4c5a-9a01-5b0b0c0d0006",
+      "name": "Send reply",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        900,
+        0
+      ],
+      "webhookId": "6c1d1f8e-0106-4c5a-9a01-5b0b0c0d0106",
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "",
+        "recipientPhoneNumber": "={{ $('WhatsApp Trigger').item.json.messages[0].from }}",
+        "textBody": "={{ $json.output }}",
+        "additionalFields": {}
+      }
+    },
+    {
+      "id": "6c1d1f8e-0007-4c5a-9a01-5b0b0c0d0007",
+      "name": "Save lead",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        520,
+        -260
+      ],
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "url",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "Leads"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $now.toFormat('yyyy-MM-dd HH:mm') }}",
+            "Name": "={{ $json.contacts[0].profile.name }}",
+            "Phone": "={{ $json.contacts[0].wa_id }}",
+            "Message": "={{ $json.messages[0].text.body }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone",
+              "displayName": "Phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Message",
+              "displayName": "Message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "Only text messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Only text messages": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Save lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  }
+}
