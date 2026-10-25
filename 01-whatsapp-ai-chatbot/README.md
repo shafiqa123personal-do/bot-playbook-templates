@@ -9,7 +9,7 @@ WhatsApp Trigger → Only text messages → AI Agent (Google Gemini + Simple Mem
 
 ## Set it up in 10 minutes
 
-1. **Import:** in n8n, open a new workflow, then use the **⋯** menu → **Import from URL** and paste this link:
+1. **Import:** in n8n, open a new workflow, then use the **⋯** menu → **Import** → **From URL** and paste this link:
    ```
    https://raw.githubusercontent.com/shafiqa123personal-do/bot-playbook-templates/main/01-whatsapp-ai-chatbot/whatsapp-ai-chatbot.json
    ```

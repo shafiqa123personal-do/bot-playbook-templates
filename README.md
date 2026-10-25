@@ -10,7 +10,7 @@ Every Bot Playbook tutorial on YouTube comes with the finished workflow, free. I
 ## How to use a template
 
 1. Open the template's folder above and follow its README.
-2. In n8n, use the **⋯** menu, then **Import from URL**, and paste the template's link. Or download the `.json` file and use **Import from File**.
+2. In n8n, open a new workflow, use the **⋯** menu, then **Import**, then **From URL**, and paste the template's link. Or download the `.json` file and use **Import from File**.
 3. Add your own credentials. Templates never contain keys, tokens or IDs.
 
 Free to use, change, and use for your clients ([MIT License](LICENSE)).
